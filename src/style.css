@@ -26,8 +26,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
 }
-
 
 h1 {
   font-size: 3.2em;
@@ -59,10 +59,145 @@ button:focus-visible {
 
 #app {
   width: 100%;
-  padding: 0; /* or reduce this */
-  text-align: left; /* optional, depends on your layout */
+  padding: 0;
+  text-align: left;
 }
 
+/* Improved Mobile Support */
+@media (max-width: 768px) {
+  :root {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 2.5em;
+    line-height: 1.2;
+  }
+
+  button {
+    padding: 0.5em 1em;
+    font-size: 0.9em;
+  }
+
+  /* Home.vue specific mobile adjustments */
+  .home-container {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .hero-content {
+    padding: 1rem;
+    width: 95%;
+    top: 55%;
+  }
+
+  #pageTitle {
+    font-size: 2.5rem;
+  }
+
+  .subtext {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .tech-stack {
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .tech-icon img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .cta-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .social-links {
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .terminal-window {
+    font-size: 0.85rem;
+  }
+
+  /* About.vue mobile adjustments */
+  .about-wrapper {
+    padding: 2rem 1rem;
+  }
+
+  .about-container {
+    padding: 2rem;
+  }
+
+  .about-container h1 {
+    font-size: 2rem;
+  }
+
+  .about-container p {
+    font-size: 1rem;
+  }
+
+  /* Header.vue mobile adjustments */
+  .topnav {
+    height: auto;
+    padding: 0.5rem 1rem;
+  }
+
+  .nav-inner {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .nav-links {
+    gap: 1rem;
+  }
+
+  .logo {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    font-size: 13px;
+  }
+
+  #pageTitle {
+    font-size: 2rem;
+  }
+
+  .subtext {
+    font-size: 1rem;
+  }
+
+  .tech-icon {
+    flex: 0 0 25%;
+  }
+
+  .about-container {
+    padding: 1.5rem;
+  }
+
+  .nav-links {
+    gap: 0.8rem;
+  }
+
+  .terminal-window {
+    font-size: 0.75rem;
+  }
+}
 
 @media (prefers-color-scheme: light) {
   :root {
