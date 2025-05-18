@@ -2,7 +2,13 @@
   <nav class="topnav">
     <div class="nav-inner">
       <div class="logo">❄️ Snowdev</div>
-      <div class="nav-links">
+
+      <!-- Hamburger icon stays on the nav bar -->
+      <div class="burger" @click="toggleMenu">
+        ☰
+      </div>
+
+      <div class="nav-links" :class="{ open: menuOpen }">
         <router-link to="/" class="nav-link" exact-active-class="active">Home</router-link>
         <router-link to="/about" class="nav-link" exact-active-class="active">About</router-link>
       </div>
@@ -12,7 +18,17 @@
 
 <script>
 export default {
-  name: 'Header'
+  name: 'Header',
+  data() {
+    return {
+      menuOpen: false
+    };
+  },
+  methods: {
+    toggleMenu() {
+      this.menuOpen = !this.menuOpen;
+    }
+  }
 };
 </script>
 
@@ -50,11 +66,23 @@ export default {
   letter-spacing: 1px;
 }
 
+/* Navigation links */
 .nav-links {
   display: flex;
   gap: 2rem;
 }
 
+/* Hamburger icon (hidden by default) */
+.burger {
+  display: none;
+  font-size: 2rem; /* Make it larger */
+  color: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.3rem 0.6rem;
+}
+
+/* Link styles */
 .nav-link {
   color: #cdd9ff;
   text-decoration: none;
@@ -89,24 +117,26 @@ export default {
   color: #ffffff;
 }
 
-/* Responsive: Stack on small screens */
+/* Mobile styles */
 @media (max-width: 600px) {
-  .nav-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    height: auto;
-    padding: 1rem;
+  .burger {
+    display: block;
   }
 
   .nav-links {
+    display: none;
     flex-direction: column;
     gap: 1rem;
-    margin-top: 0.5rem;
+    background-color: rgba(20, 20, 20, 0.95);
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    padding: 1rem;
   }
 
-  .logo {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
+  .nav-links.open {
+    display: flex;
   }
 }
 </style>
