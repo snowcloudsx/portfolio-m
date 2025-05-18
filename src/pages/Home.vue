@@ -47,7 +47,7 @@
           </div>
           <div class="terminal-body">
             <p><span class="terminal-prompt">$</span> whoami</p>
-            <p>a 13 year old who has way to much free time</p>
+            <p>a 13 year old who has way too much free time</p>
             <p><span class="terminal-prompt">$</span> current_project</p>
             <p>Working on this website </p>
             <p><span class="terminal-prompt">$</span> <span class="terminal-cursor">|</span></p>
