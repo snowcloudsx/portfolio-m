@@ -1,3 +1,5 @@
+@import 'tailwindcss';
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -27,7 +29,13 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
+
+  background: linear-gradient(-45deg, #1e1e2f, #2a2a3b, #202030, #1a1a26);
+  background-size: 300% 300%;
+  animation: gradientBG 25s ease infinite;
+  color: white;
 }
+
 
 h1 {
   font-size: 3.2em;
@@ -79,7 +87,6 @@ button:focus-visible {
     font-size: 0.9em;
   }
 
-  /* Home.vue specific mobile adjustments */
   .home-container {
     height: auto;
     min-height: 100vh;
@@ -132,7 +139,6 @@ button:focus-visible {
     font-size: 0.85rem;
   }
 
-  /* About.vue mobile adjustments */
   .about-wrapper {
     padding: 2rem 1rem;
   }
@@ -149,7 +155,6 @@ button:focus-visible {
     font-size: 1rem;
   }
 
-  /* Header.vue mobile adjustments */
   .topnav {
     height: auto;
     padding: 0.5rem 1rem;
@@ -209,5 +214,16 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
