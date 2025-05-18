@@ -11,6 +11,7 @@
       <div class="nav-links" :class="{ open: menuOpen }">
         <router-link to="/" class="nav-link" exact-active-class="active">Home</router-link>
         <router-link to="/about" class="nav-link" exact-active-class="active">About</router-link>
+        <router-link to="/projects" class="nav-link" exact-active-class="active">Projects</router-link>
       </div>
     </div>
   </nav>
