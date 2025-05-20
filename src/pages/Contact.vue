@@ -20,10 +20,16 @@
         </div>
       </form>
     </div>
+
+    <div v-if="popup.visible" class="popup" :class="{ success: popup.success, error: !popup.success }">
+      {{ popup.message }}
+    </div>
   </div>
 </template>
 
 <script>
+import emailjs from 'emailjs-com';
+
 export default {
   name: "App",
   data() {
@@ -32,15 +38,44 @@ export default {
         name: "",
         email: "",
         message: ""
+      },
+      popup: {
+        visible: false,
+        message: "",
+        success: true
       }
     };
   },
   methods: {
+    showPopup(message, success = true) {
+      this.popup.message = message;
+      this.popup.success = success;
+      this.popup.visible = true;
+      setTimeout(() => {
+        this.popup.visible = false;
+      }, 4000);
+    },
     submitForm() {
-      alert(`Thanks, ${this.form.name}! Your message has been sent.`);
-      this.form.name = "";
-      this.form.email = "";
-      this.form.message = "";
+      emailjs.send(
+        "service_6r50e8j",
+        "template_mfagmof",
+        {
+          name: this.form.name,
+          email: this.form.email,
+          message: this.form.message
+        },
+        "rFEFGBLo75hVXOIUz"
+      )
+      .then(() => {
+        this.showPopup(`Thanks, ${this.form.name}! Your message has been sent.`, true);
+        this.form.name = "";
+        this.form.email = "";
+        this.form.message = "";
+      })
+      .catch((error) => {
+        console.error("FAILED...", error);
+        this.showPopup("Failed to send message. Please try again.", false);
+      });
     }
   }
 };
@@ -57,6 +92,7 @@ export default {
   background-size: 300% 300%;
   animation: gradientBG 25s ease infinite;
   color: white;
+  position: relative;
 }
 
 .contact-container {
@@ -130,7 +166,6 @@ button:hover {
   box-shadow: 0 0 12px #646cffaa;
 }
 
-/* Animations */
 @keyframes fadeInUp {
   0% {
     opacity: 0;
@@ -190,6 +225,44 @@ button:hover {
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+.popup {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+  color: #fff;
+  z-index: 99999999;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease, fadeOut 0.5s ease 3.5s forwards;
+  max-width: 320px;
+  word-wrap: break-word;
+  font-size: 1rem;
+}
+.popup.success {
+  background-color: #4caf50;
+}
+.popup.error {
+  background-color: #f44336;
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(40px);
   }
 }
 </style>
