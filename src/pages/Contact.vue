@@ -30,6 +30,35 @@
 <script>
 import emailjs from 'emailjs-com';
 
+const BanWordPatterns = [
+  /f[\W_]*[uüv][\W_]*[cçkq][\W_]*k/i,
+  /s[\W_]*[h#]+[\W_]*[i1!]+[\W_]*t/i,
+  /b[\W_]*[i1!]+[\W_]*[t+]+[\W_]*[cçkq]+[\W_]*h?/i,
+  /a[\W_]*[s$5@]+[\W_]*s/i,
+  /c[\W_]*[uü]+[\W_]*[n]+[\W_]*[t+]/i,
+  /n[\W_]*[i1!l]+[\W_]*[g9q]+[\W_]*[g9q]+[\W_]*[a@]/i,
+  /c[\W_]*[r]+[\W_]*[a@]+[\W_]*[cçk]+[\W_]*[k]+[\W_]*[e3]+[\W_]*[r]/i,
+  /f[\W_]*[a@]+[\W_]*[g9q]+/i,
+  /r[\W_]*[e3]+[\W_]*[t7]+[\W_]*[a@]+[\W_]*[r]+[\W_]*[d]/i,
+  /w[\W_]*[h]+[\W_]*[o0]+[\W_]*[r]+[\W_]*[e3]/i,
+  /s[\W_]*[l1!]+[\W_]*[uü]+[\W_]*[t+]/i,
+  /d[\W_]*[i1!]+[\W_]*[cçkq]+/i,
+  /p[\W_]*[uü]+[\W_]*[s$5]+[\W_]*[s$5]+[\W_]*[y]/i,
+  /b[\W_]*[a@]+[\W_]*[s$5]+[\W_]*[t7]+[\W_]*[a@]+[\W_]*[r]+[\W_]*d/i,
+  /c[\W_]*[o0]+[\W_]*[cçkq]+/i,
+  /d[\W_]*[y]+[\W_]*[k]+[\W_]*[e3]/i,
+  /k[\W_]*[i1!]+[\W_]*[k]+[\W_]*[e3]/i,
+  /c[\W_]*[h]+[\W_]*[i1!]+[\W_]*[n]+[\W_]*[k]+/i,
+  /s[\W_]*[p]+[\W_]*[i1!]+[\W_]*[cçkq]+/i,
+  /t[\W_]*[w]+[\W_]*[a@]+[\W_]*[t+]/i,
+  /m[\W_]*[o0]+[\W_]*[t+]+[\W_]*[h]+[\W_]*[e3]+[\W_]*[r]+[\W_]*[f]+[\W_]*[uü]+[\W_]*[cçkq]+[\W_]*[k]/i,
+  /a[\W_]*[s$5]+[\W_]*[s$5]+[\W_]*[h]+[\W_]*[o0]+[\W_]*[l3e]+/i
+];
+
+function containsBannedWord(text) {
+  return BanWordPatterns.some(pattern => pattern.test(text));
+}
+
 export default {
   name: "App",
   data() {
@@ -56,18 +85,26 @@ export default {
       }, 4000);
     },
     submitForm() {
+      // Check for profanity
+      const { name, email, message } = this.form;
+      if (
+        containsBannedWord(name) ||
+        containsBannedWord(email) ||
+        containsBannedWord(message)
+      ) {
+        this.showPopup("Your message contains inappropriate language.", false);
+        return;
+      }
+
+      // Send with emailjs
       emailjs.send(
         "service_6r50e8j",
         "template_mfagmof",
-        {
-          name: this.form.name,
-          email: this.form.email,
-          message: this.form.message
-        },
+        { name, email, message },
         "rFEFGBLo75hVXOIUz"
       )
       .then(() => {
-        this.showPopup(`Thanks, ${this.form.name}! Your message has been sent.`, true);
+        this.showPopup(`Thanks, ${name}! Your message has been sent.`, true);
         this.form.name = "";
         this.form.email = "";
         this.form.message = "";
