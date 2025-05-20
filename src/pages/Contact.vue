@@ -55,9 +55,17 @@ const BanWordPatterns = [
   /a[\W_]*[s$5]+[\W_]*[s$5]+[\W_]*[h]+[\W_]*[o0]+[\W_]*[l3e]+/i
 ];
 
-function containsBannedWord(text) {
-  return BanWordPatterns.some(pattern => pattern.test(text));
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .replace(/[\W_]+/g, ''); // remove all non-word characters (symbols, spaces, punctuation)
 }
+
+function containsBannedWord(text) {
+  const normalized = normalize(text);
+  return BanWordPatterns.some(pattern => pattern.test(normalized));
+}
+
 
 export default {
   name: "App",
@@ -273,7 +281,7 @@ button:hover {
   border-radius: 10px;
   font-weight: 500;
   color: #fff;
-  z-index: 99999999;
+  z-index: 9999999999;
   box-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
   animation: slideIn 0.3s ease, fadeOut 0.5s ease 3.5s forwards;
   max-width: 320px;
