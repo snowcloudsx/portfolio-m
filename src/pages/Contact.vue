@@ -15,20 +15,35 @@
           <label for="message">Message</label>
           <textarea id="message" rows="5" v-model="form.message" required></textarea>
         </div>
-        <div class="animate-slide-delay-4">
-          <button type="submit">Send</button>
+
+        <div class="field-group animate-slide-delay-4" style="margin-top: 1rem;">
+          <!-- Google reCAPTCHA widget -->
+          <div
+            class="g-recaptcha"
+            data-sitekey="6Ld8HUIrAAAAAIJPFOeJ3vKcED5qyn5o530_NqKE"
+          ></div>
+        </div>
+
+        <div class="animate-slide-delay-5" style="margin-top: 1.5rem;">
+          <button type="submit" :disabled="loading">
+            {{ loading ? "Sending..." : "Send" }}
+          </button>
         </div>
       </form>
     </div>
 
-    <div v-if="popup.visible" class="popup" :class="{ success: popup.success, error: !popup.success }">
+    <div
+      v-if="popup.visible"
+      class="popup"
+      :class="{ success: popup.success, error: !popup.success }"
+    >
       {{ popup.message }}
     </div>
   </div>
 </template>
 
 <script>
-import emailjs from 'emailjs-com';
+import emailjs from "emailjs-com";
 
 const BanWordPatterns = [
   /f[\W_]*[uüv][\W_]*[cçkq][\W_]*k/i,
@@ -52,36 +67,40 @@ const BanWordPatterns = [
   /s[\W_]*[p]+[\W_]*[i1!]+[\W_]*[cçkq]+/i,
   /t[\W_]*[w]+[\W_]*[a@]+[\W_]*[t+]/i,
   /m[\W_]*[o0]+[\W_]*[t+]+[\W_]*[h]+[\W_]*[e3]+[\W_]*[r]+[\W_]*[f]+[\W_]*[uü]+[\W_]*[cçkq]+[\W_]*[k]/i,
-  /a[\W_]*[s$5]+[\W_]*[s$5]+[\W_]*[h]+[\W_]*[o0]+[\W_]*[l3e]+/i
+  /a[\W_]*[s$5]+[\W_]*[s$5]+[\W_]*[h]+[\W_]*[o0]+[\W_]*[l3e]+/i,
 ];
 
-function normalize(text) {
-  return text
-    .toLowerCase()
-    .replace(/[\W_]+/g, ''); // remove all non-word characters (symbols, spaces, punctuation)
-}
-
 function containsBannedWord(text) {
-  const normalized = normalize(text);
-  return BanWordPatterns.some(pattern => pattern.test(normalized));
+  return BanWordPatterns.some((pattern) => pattern.test(text));
 }
-
 
 export default {
-  name: "App",
+  name: "ContactForm",
   data() {
     return {
       form: {
         name: "",
         email: "",
-        message: ""
+        message: "",
       },
       popup: {
         visible: false,
         message: "",
-        success: true
-      }
+        success: true,
+      },
+      loading: false,
+      lastSentTimestampKey: "contactFormLastSent",
     };
+  },
+  mounted() {
+    if (!document.getElementById("recaptcha-script")) {
+      const script = document.createElement("script");
+      script.id = "recaptcha-script";
+      script.src = "https://www.google.com/recaptcha/api.js";
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
   },
   methods: {
     showPopup(message, success = true) {
@@ -92,9 +111,33 @@ export default {
         this.popup.visible = false;
       }, 4000);
     },
+    isRateLimited() {
+      const lastSent = localStorage.getItem(this.lastSentTimestampKey);
+      if (!lastSent) return false;
+      const lastSentTime = parseInt(lastSent, 10);
+      const now = Date.now();
+      return now - lastSentTime < 60000; // 1 minute
+    },
+    setRateLimitTimestamp() {
+      localStorage.setItem(this.lastSentTimestampKey, Date.now().toString());
+    },
+    validateRecaptcha() {
+      return (
+        window.grecaptcha &&
+        window.grecaptcha.getResponse &&
+        window.grecaptcha.getResponse().length > 0
+      );
+    },
+    resetRecaptcha() {
+      if (window.grecaptcha) {
+        window.grecaptcha.reset();
+      }
+    },
     submitForm() {
-      // Check for profanity
+      if (this.loading) return;
+
       const { name, email, message } = this.form;
+
       if (
         containsBannedWord(name) ||
         containsBannedWord(email) ||
@@ -104,25 +147,46 @@ export default {
         return;
       }
 
-      // Send with emailjs
-      emailjs.send(
-        "service_6r50e8j",
-        "template_mfagmof",
-        { name, email, message },
-        "rFEFGBLo75hVXOIUz"
-      )
-      .then(() => {
-        this.showPopup(`Thanks, ${name}! Your message has been sent.`, true);
-        this.form.name = "";
-        this.form.email = "";
-        this.form.message = "";
-      })
-      .catch((error) => {
-        console.error("FAILED...", error);
-        this.showPopup("Failed to send message. Please try again.", false);
-      });
-    }
-  }
+      if (this.isRateLimited()) {
+        this.showPopup(
+          "You can only send one message per minute. Please wait and try again.",
+          false
+        );
+        return;
+      }
+
+      if (!this.validateRecaptcha()) {
+        this.showPopup("Please complete the reCAPTCHA.", false);
+        return;
+      }
+
+      this.loading = true;
+
+      emailjs
+        .send(
+          "service_6r50e8j",
+          "template_mfagmof",
+          { name, email, message },
+          "rFEFGBLo75hVXOIUz"
+        )
+        .then(() => {
+          this.showPopup(`Thanks, ${name}! Your message has been sent.`, true);
+          this.form.name = "";
+          this.form.email = "";
+          this.form.message = "";
+          this.setRateLimitTimestamp();
+          this.resetRecaptcha();
+        })
+        .catch((error) => {
+          console.error("FAILED...", error);
+          this.showPopup("Failed to send message. Please try again.", false);
+          this.resetRecaptcha();
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+  },
 };
 </script>
 
@@ -145,120 +209,99 @@ export default {
   border: 1px solid #333;
   border-radius: 16px;
   padding: 2.5rem;
-  max-width: 480px;
   width: 100%;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-  animation: fadeInUp 1s ease-out;
+  max-width: 480px;
+  box-shadow: 0 0 20px #0077ff55;
+  font-family: "Poppins", sans-serif;
+  user-select: none;
 }
 
 h1 {
+  font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 1.2rem;
+  user-select: none;
   text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2.4rem;
-  color: #ffffff;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
 }
 
 .field-group {
+  margin-bottom: 1.2rem;
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.5rem;
 }
 
 label {
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: #ccc;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+  user-select: none;
 }
 
 input,
 textarea {
-  background-color: #2a2a3b;
-  color: #fff;
-  border: 1px solid #444;
-  border-radius: 8px;
+  background-color: #222233;
+  border: 2px solid #444466;
+  border-radius: 14px;
   padding: 0.8rem 1rem;
   font-size: 1rem;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  font-family: "Poppins", sans-serif;
+  color: white;
+  transition: border-color 0.3s ease;
 }
 
 input:focus,
 textarea:focus {
+  border-color: #00aaff;
   outline: none;
-  border-color: #646cff;
-  box-shadow: 0 0 10px #646cff66;
 }
 
 button {
-  background-color: #646cff;
+  background: linear-gradient(90deg, #00aaff, #0055ff);
   color: white;
-  font-weight: 600;
-  font-size: 1rem;
-  padding: 0.8rem 1.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  align-self: flex-end;
+  transition: background 0.3s ease;
+  user-select: none;
+  box-shadow: 0 4px 15px rgba(0, 170, 255, 0.4);
+  width: 100%;
 }
 
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px #646cffaa;
+button:disabled {
+  background: #555a75;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+button:hover:not(:disabled) {
+  background: linear-gradient(90deg, #0055ff, #00aaff);
 }
 
-.animate-pop {
-  animation: popIn 0.8s ease forwards;
+.popup {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  user-select: none;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  animation: popupFadeIn 0.5s ease forwards;
 }
 
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+.popup.success {
+  background-color: #009933cc;
+  color: #e6ffe6;
 }
 
-.animate-slide-delay-1 {
-  animation: fadeInUp 0.8s ease forwards;
-  animation-delay: 0.3s;
-}
-.animate-slide-delay-2 {
-  animation: fadeInUp 0.8s ease forwards;
-  animation-delay: 0.5s;
-}
-.animate-slide-delay-3 {
-  animation: fadeInUp 0.8s ease forwards;
-  animation-delay: 0.7s;
-}
-.animate-slide-delay-4 {
-  animation: fadeInUp 0.8s ease forwards;
-  animation-delay: 0.9s;
-}
-.animate-slide-delay-1,
-.animate-slide-delay-2,
-.animate-slide-delay-3,
-.animate-slide-delay-4 {
-  opacity: 0;
-  animation-fill-mode: forwards;
+.popup.error {
+  background-color: #cc3300cc;
+  color: #ffe6e6;
 }
 
 @keyframes gradientBG {
@@ -273,41 +316,14 @@ button:hover {
   }
 }
 
-.popup {
-  position: fixed;
-  top: 2rem;
-  right: 2rem;
-  padding: 1rem 1.5rem;
-  border-radius: 10px;
-  font-weight: 500;
-  color: #fff;
-  z-index: 9999999999;
-  box-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
-  animation: slideIn 0.3s ease, fadeOut 0.5s ease 3.5s forwards;
-  max-width: 320px;
-  word-wrap: break-word;
-  font-size: 1rem;
-}
-.popup.success {
-  background-color: #4caf50;
-}
-.popup.error {
-  background-color: #f44336;
-}
-@keyframes slideIn {
+@keyframes popupFadeIn {
   from {
     opacity: 0;
-    transform: translateX(40px);
+    transform: translate(-50%, 20px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
-  }
-}
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    transform: translateX(40px);
+    transform: translate(-50%, 0);
   }
 }
 </style>
