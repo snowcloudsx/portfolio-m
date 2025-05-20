@@ -7,15 +7,19 @@ import Contact from './pages/Contact.vue';
 const routes = [
   { path: '/', component: Home, meta: { title: 'Home | Snowdev' }},
   { path: '/about', component: About, meta: { title: 'About | Snowdev' }},
-  { path: '/projects', component: Projects, smeta: { title: 'Projects | Snowdev' }},
-  { path: '/contact', component: Contact, smeta: { title: 'Contact Me | Snowdev' }
-
-}
+  { path: '/projects', component: Projects, meta: { title: 'Projects | Snowdev' }},
+  { path: '/contact', component: Contact, meta: { title: 'Contact Me | Snowdev' }}
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+});
+
+router.afterEach((to) => {
+  if (to.meta && to.meta.title) {
+    document.title = to.meta.title;
+  }
 });
 
 export default router;
