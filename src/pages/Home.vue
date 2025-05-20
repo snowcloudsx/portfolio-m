@@ -22,7 +22,7 @@
         </div>
         
         <div class="button-group">
-          <a href="https://github.com/yourprofile" target="_blank" class="cta-button primary">
+          <a href="https://github.com/snowcloudsx" target="_blank" class="cta-button primary">
             <span>View GitHub</span>
             <svg class="arrow-icon" viewBox="0 0 24 24">
               <path d="M5 12h14M12 5l7 7-7 7"/>
